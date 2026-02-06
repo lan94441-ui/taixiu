@@ -2,88 +2,91 @@ import streamlit as st
 import random
 import time
 
-st.set_page_config(page_title="Tự Tay Mở Bát", layout="centered")
+# Cấu hình phong cách Casino Sunwin
+st.set_page_config(page_title="Sunwin Tai Xiu Pro", layout="centered")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #0e1117; color: white; }
+    .stApp { background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%); color: gold; }
     div.stButton > button {
-        width: 100%; height: 80px; font-size: 25px; font-weight: bold; 
-        border-radius: 20px; border: 2px solid #ffd700; background-color: #1a1c23; color: #ffd700;
+        border: 2px solid #ffd700; background: linear-gradient(to bottom, #444, #111);
+        color: white; font-weight: bold; border-radius: 10px; height: 60px;
     }
-    .bat-container {
-        text-align: center; padding: 20px; background: #1f2937; border-radius: 20px; border: 2px solid #374151;
-    }
-    .status-text { font-size: 20px; color: #ffd700; font-weight: bold; }
+    .bet-btn { background: linear-gradient(to bottom, #ff4b4b, #8b0000) !important; font-size: 25px !important; height: 100px !important; }
+    .xiu-btn { background: linear-gradient(to bottom, #3b82f6, #00008b) !important; font-size: 25px !important; height: 100px !important; }
+    .money-box { background: #222; border: 1px solid gold; border-radius: 10px; padding: 10px; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-if 'so_du' not in st.session_state: st.session_state.so_du = 10000
+if 'so_du' not in st.session_state: st.session_state.so_du = 100000
+if 'cuoc_hien_tai' not in st.session_state: st.session_state.cuoc_hien_tai = 0
 if 'lich_su' not in st.session_state: st.session_state.lich_su = []
-if 'trang_thai' not in st.session_state: st.session_state.trang_thai = "DANG_CUOC" # DANG_CUOC, DA_UP_BAT, DA_MO
-if 'kq_phien' not in st.session_state: st.session_state.kq_phien = {}
 
-st.markdown("<h1 style='text-align: center; color: #ffd700;'>🥣 TỰ TAY MỞ BÁT 🎲</h1>", unsafe_allow_html=True)
-st.subheader(f"💰 Vốn: {st.session_state.so_du:,}$")
+st.markdown("<h1 style='text-align: center; color: gold;'>🏆 SUNWIN TÀI XỈU MD5 🏆</h1>", unsafe_allow_html=True)
 
-# 1. GIAI ĐOẠN ĐẶT CƯỢC
-if st.session_state.trang_thai == "DANG_CUOC":
-    cuoc = st.number_input("💵 Tiền cược:", min_value=100, step=500, value=1000)
-    col1, col2 = st.columns(2)
-    with col1: tai = st.button("🔴 TÀI")
-    with col2: xiu = st.button("🔵 XỈU")
+# Hiển thị số dư hiện có
+st.markdown(f"<div class='money-box'>💰 SỐ DƯ: <span style='font-size: 25px; color: #00ff00;'>{st.session_state.so_du:,} VND</span></div>", unsafe_allow_html=True)
 
-    if tai or xiu:
-        st.session_state.lua_chon = "Tài" if tai else "Xỉu"
-        st.session_state.tien_cuoc = cuoc
-        # Lắc xúc xắc ngầm
-        dice = [random.randint(1, 6) for _ in range(3)]
-        tong = sum(dice)
-        kq = "Xỉu" if 4 <= tong <= 10 else "Tài"
-        if dice[0] == dice[1] == dice[2]: kq = "Bão"
-        st.session_state.kq_phien = {"dice": dice, "tong": tong, "kq": kq}
-        
-        with st.spinner('🎲 Đang xóc đĩa...'):
-            time.sleep(1)
-        st.session_state.trang_thai = "DA_UP_BAT"
-        st.rerun()
-
-# 2. GIAI ĐOẠN TỰ TAY MỞ BÁT
-elif st.session_state.trang_thai == "DA_UP_BAT":
-    st.markdown("<div class='bat-container'>", unsafe_allow_html=True)
-    st.markdown(f"### Bạn cược: {st.session_state.lua_chon} - {st.session_state.tien_cuoc:,}$")
-    st.markdown("<h1 style='font-size: 100px;'>🥣</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='status-text'>👇 KÉO THANH NÀY SANG PHẢI ĐỂ MỞ BÁT 👇</p>", unsafe_allow_html=True)
-    
-    # Thanh trượt mô phỏng việc dùng tay kéo bát
-    mo_bat = st.slider("", 0, 100, 0)
-    
-    if mo_bat > 90: # Khi kéo đến gần hết thanh
-        st.session_state.trang_thai = "DA_MO"
-        st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# 3. GIAI ĐOẠN KẾT QUẢ
-elif st.session_state.trang_thai == "DA_MO":
-    res = st.session_state.kq_phien
-    st.session_state.lich_su.append(res['kq'][0])
-    
-    st.markdown(f"<h2 style='text-align:center;'>🎲 {res['dice'][0]} - {res['dice'][1]} - {res['dice'][2]}</h2>", unsafe_allow_html=True)
-    st.markdown(f"<h1 style='text-align:center;'>{res['tong']} - {res['kq'].upper()}</h1>", unsafe_allow_html=True)
-    
-    if st.session_state.lua_chon == res['kq']:
-        st.balloons()
-        st.success(f"🔥 THẮNG! +{st.session_state.tien_cuoc:,}$")
-        st.session_state.so_du += st.session_state.tien_cuoc
-    else:
-        st.error(f"💸 THUA! -{st.session_state.tien_cuoc:,}$")
-        st.session_state.so_du -= st.session_state.tien_cuoc
-        
-    if st.button("CHƠI VÁN MỚI"):
-        st.session_state.trang_thai = "DANG_CUOC"
-        st.rerun()
-
-# Soi cầu
+# Chọn nhanh mức cược như trong hình
 st.write("---")
-cau_html = "".join([f'<span style="background-color:{"#ff4b4b" if x=="T" else "#3b82f6" if x=="X" else "#eab308"}; color:white; padding:8px 12px; border-radius:50%; margin:3px; display:inline-block; font-weight:bold;">{x}</span>' for x in st.session_state.lich_su[-20:]])
-st.markdown(f"📊 **Cầu đang chạy:** {cau_html}", unsafe_allow_html=True)
+st.write("💵 Chọn mức cược:")
+c1, c2, c3, c4, c5 = st.columns(5)
+with c1: 
+    if st.button("10K"): st.session_state.cuoc_hien_tai += 10000
+with c2: 
+    if st.button("50K"): st.session_state.cuoc_hien_tai += 50000
+with c3: 
+    if st.button("100K"): st.session_state.cuoc_hien_tai += 100000
+with c4: 
+    if st.button("500K"): st.session_state.cuoc_hien_tai += 500000
+with c5: 
+    if st.button("ALL-IN", type="primary"): st.session_state.cuoc_hien_tai = st.session_state.so_du
+
+st.markdown(f"### Đang cược: <span style='color: yellow;'>{st.session_state.cuoc_hien_tai:,} VND</span>", unsafe_allow_html=True)
+if st.button("Xóa cược"): st.session_state.cuoc_hien_tai = 0
+
+# Hai nút đặt cửa khổng lồ
+st.write("---")
+col_tai, col_xiu = st.columns(2)
+with col_tai:
+    tai = st.button("🔴 TÀI", key="tai_btn", help="Đặt Tài", use_container_width=True)
+with col_xiu:
+    xiu = st.button("🔵 XỈU", key="xiu_btn", help="Đặt Xỉu", use_container_width=True)
+
+if tai or xiu:
+    if st.session_state.cuoc_hien_tai <= 0:
+        st.error("⚠️ Vui lòng chọn tiền cược trước!")
+    elif st.session_state.cuoc_hien_tai > st.session_state.so_du:
+        st.error("⚠️ Bạn không đủ tiền!")
+    else:
+        chon = "Tài" if tai else "Xỉu"
+        with st.spinner('🎲 Đang xóc...'):
+            time.sleep(1.5)
+        
+        d = [random.randint(1, 6) for _ in range(3)]
+        tong = sum(d)
+        kq = "Xỉu" if 4 <= tong <= 10 else "Tài"
+        if d[0] == d[1] == d[2]: kq = "Bão"
+        
+        st.session_state.lich_su.append(kq[0])
+        
+        st.markdown(f"<h2 style='text-align: center;'>🎲 {d[0]} - {d[1]} - {d[2]} ({tong})</h2>", unsafe_allow_html=True)
+        
+        if kq == "Bão":
+            st.error(f"💀 BÃO! Nhà cái thu sạch {st.session_state.cuoc_hien_tai:,} VND")
+            st.session_state.so_du -= st.session_state.cuoc_hien_tai
+        elif chon == kq:
+            st.balloons()
+            st.success(f"🎊 THẮNG! +{st.session_state.cuoc_hien_tai:,} VND")
+            st.session_state.so_du += st.session_state.cuoc_hien_tai
+        else:
+            st.error(f"💸 THUA! -{st.session_state.cuoc_hien_tai:,} VND")
+            st.session_state.so_du -= st.session_state.cuoc_hien_tai
+        
+        st.session_state.cuoc_hien_tai = 0 # Reset tiền cược sau ván
+
+# Soi cầu chuyên nghiệp
+st.write("---")
+st.write("📊 Lịch sử phiên:")
+cau_html = "".join([f'<span style="background-color:{"#ff4b4b" if x=="T" else "#3b82f6" if x=="X" else "#eab308"}; color:white; padding:10px 14px; border-radius:50%; margin:4px; display:inline-block; font-weight:bold; border: 1px solid #fff;">{x}</span>' for x in st.session_state.lich_su[-15:]])
+st.markdown(cau_html, unsafe_allow_html=True)
