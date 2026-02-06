@@ -1,120 +1,146 @@
 import streamlit as st
+import streamlit.components.v1 as components
+import random
 
-st.set_page_config(page_title="Sunwin 3D Real", layout="centered")
+# Cấu hình trang
+st.set_page_config(page_title="Sunwin 3D Pro Max", layout="centered")
 
-# Vốn khởi nghiệp 10 Triệu
+# Khởi tạo số dư 10 triệu
 if 'so_du' not in st.session_state:
     st.session_state.so_du = 10000000
 
-st.markdown(f"""
+# CSS để làm giao diện đen vàng sang trọng
+st.markdown("""
 <style>
-    .stApp {{ background: radial-gradient(circle, #2c3e50, #000); }}
-    .casino-container {{
-        text-align: center;
-        font-family: 'Arial', sans-serif;
-        color: gold;
-    }}
-    /* Hiệu ứng Xúc xắc 3D */
-    .dice-area {{
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        perspective: 1000px;
-        margin: 50px 0;
-    }}
-    .cube {{
-        width: 60px;
-        height: 60px;
-        position: relative;
-        transform-style: preserve-3d;
-        transition: transform 2s ease-out;
-    }}
-    .cube div {{
-        position: absolute;
-        width: 60px;
-        height: 60px;
-        background: white;
-        border: 2px solid #ccc;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-        color: black;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
-    }}
-    /* Các mặt của xúc xắc */
-    .front  {{ transform: translateZ(30px); }}
-    .back   {{ transform: rotateY(180deg) translateZ(30px); }}
-    .right  {{ transform: rotateY(90deg) translateZ(30px); }}
-    .left   {{ transform: rotateY(-90deg) translateZ(30px); }}
-    .top    {{ transform: rotateX(90deg) translateZ(30px); }}
-    .bottom {{ transform: rotateX(-90deg) translateZ(30px); }}
-
-    /* Hiệu ứng quay */
-    .spinning {{
-        animation: spin 0.5s infinite linear;
-    }}
-    @keyframes spin {{
-        0% {{ transform: rotateX(0) rotateY(0); }}
-        100% {{ transform: rotateX(360deg) rotateY(360deg); }}
-    }}
-
-    .bat-container {{
-        position: relative;
-        width: 250px;
-        height: 250px;
-        margin: 0 auto;
-    }}
-    .bat {{
-        width: 200px;
-        height: 200px;
-        background: #444;
-        border-radius: 50%;
-        border: 5px solid gold;
-        position: absolute;
-        top: 25px;
-        left: 25px;
-        z-index: 100;
-        transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 80px;
-    }}
+    .stApp { background-color: #0b0e14; }
+    .money-header {
+        text-align: center; background: #1a1c23; border: 2px solid gold;
+        padding: 15px; border-radius: 20px; color: #00ff00;
+        font-size: 30px; font-weight: bold; margin-bottom: 20px;
+    }
 </style>
-
-<div class="casino-container">
-    <h1>🏆 SUNWIN 3D REAL 🏆</h1>
-    <h2 style="color: #00ff00;">Số dư: {st.session_state.so_du:,} VND</h2>
-</div>
+<div class="money-header">💰 SỐ DƯ: """ + f"{st.session_state.so_du:,}" + """ VND</div>
 """, unsafe_allow_html=True)
 
-# Logic game đơn giản để kết nối với hiệu ứng
-col1, col2 = st.columns(2)
-with col1:
-    cuoc = st.number_input("Tiền cược:", min_value=10000, step=50000, value=100000)
-with col2:
-    cua = st.selectbox("Chọn cửa:", ["Tài", "Xỉu"])
+# Mã HTML, CSS và JavaScript hoàn chỉnh
+html_code = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body { background: transparent; color: gold; font-family: 'Segoe UI', sans-serif; text-align: center; overflow: hidden; }
+    .table-3d { 
+        background: radial-gradient(circle, #333 0%, #000 100%);
+        border: 8px solid #ffd700; border-radius: 50%; width: 300px; height: 300px;
+        margin: 10px auto; position: relative; display: flex; align-items: center; justify-content: center;
+        perspective: 800px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+    }
+    .dice-container { display: flex; gap: 10px; z-index: 1; }
+    .dice { width: 50px; height: 50px; position: relative; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .dice div {
+        position: absolute; width: 50px; height: 50px; background: #fff;
+        border: 1px solid #ccc; border-radius: 8px; display: flex;
+        align-items: center; justify-content: center; font-size: 28px; color: #000; font-weight: bold;
+    }
+    .f1 { transform: translateZ(25px); }
+    .f6 { transform: rotateY(180deg) translateZ(25px); }
+    .f3 { transform: rotateY(90deg) translateZ(25px); }
+    .f4 { transform: rotateY(-90deg) translateZ(25px); }
+    .f2 { transform: rotateX(90deg) translateZ(25px); }
+    .f5 { transform: rotateX(-90deg) translateZ(25px); }
 
-if st.button("🔥 LẮC VÀ NẶN 🔥"):
-    # Giả lập lắc
-    st.markdown("""
-    <div class="dice-area">
-        <div class="cube spinning"><div>⚀</div><div class="back">⚅</div><div class="right">⚂</div><div class="left">⚃</div><div class="top">⚁</div><div class="bottom">⚄</div></div>
-        <div class="cube spinning"><div>⚀</div><div class="back">⚅</div><div class="right">⚂</div><div class="left">⚃</div><div class="top">⚁</div><div class="bottom">⚄</div></div>
-        <div class="cube spinning"><div>⚀</div><div class="back">⚅</div><div class="right">⚂</div><div class="left">⚃</div><div class="top">⚁</div><div class="bottom">⚄</div></div>
+    .bat {
+        position: absolute; width: 270px; height: 270px; 
+        background: radial-gradient(circle, #555, #111);
+        border-radius: 50%; border: 3px solid #ffd700; z-index: 10;
+        cursor: pointer; transition: 0.5s ease-out; font-size: 120px;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    }
+    .spinning { animation: spin 0.15s infinite linear; }
+    @keyframes spin { 0% { transform: rotateX(0) rotateY(0); } 100% { transform: rotateX(360deg) rotateY(360deg); } }
+    
+    .controls { margin-top: 20px; }
+    .btn-main { 
+        background: linear-gradient(to bottom, #ffd700, #b8860b); color: black; 
+        border: none; padding: 15px 40px; font-size: 22px; font-weight: bold; 
+        border-radius: 15px; cursor: pointer; width: 80%; box-shadow: 0 5px 0 #8b6508;
+    }
+    .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 0 #8b6508; }
+</style>
+</head>
+<body>
+
+    <div class="table-3d">
+        <div class="dice-container">
+            <div class="dice" id="d1"><div class="f1">⚀</div><div class="f6">⚅</div><div class="f3">⚂</div><div class="f4">⚃</div><div class="f2">⚁</div><div class="f5">⚄</div></div>
+            <div class="dice" id="d2"><div class="f1">⚀</div><div class="f6">⚅</div><div class="f3">⚂</div><div class="f4">⚃</div><div class="f2">⚁</div><div class="f5">⚄</div></div>
+            <div class="dice" id="d3"><div class="f1">⚀</div><div class="f6">⚅</div><div class="f3">⚂</div><div class="f4">⚃</div><div class="f2">⚁</div><div class="f5">⚄</div></div>
+        </div>
+        <div class="bat" id="bat" onclick="moBat()">🥣</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    # Tính toán kết quả
-    d = [random.randint(1, 6) for _ in range(3)]
-    tong = sum(d)
-    kq = "Xỉu" if 4 <= tong <= 10 else "Tài"
-    
-    import time
-    time.sleep(2) # Đợi 2 giây cho cảm giác quay
-    
-    st.rerun() # Để cập nhật trạng thái mới (Bạn cần thêm logic lưu kết quả vào session_state ở đây)
 
-st.info("Để làm giống 100% như app, bạn cần học về HTML/CSS/JS nâng cao. Bạn có muốn tôi viết hẳn một file HTML riêng để bạn mở bằng trình duyệt không?")
+    <div class="controls">
+        <button class="btn-main" onclick="lacBat()">🎲 LẮC BÁT</button>
+        <p id="msg" style="font-size: 18px; margin-top: 15px;">👉 Bấm Lắc rồi chạm vào bát để Nặn!</p>
+    </div>
+
+    <audio id="soundXoc" src="https://www.soundjay.com/misc/sounds/dice-shake-1.mp3"></audio>
+    <audio id="soundMo" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+<script>
+    let step = 0;
+    const bat = document.getElementById('bat');
+    const dices = [document.getElementById('d1'), document.getElementById('d2'), document.getElementById('d3')];
+    const angles = { 1:[0,0], 2:[-90,0], 3:[0,-90], 4:[0,90], 5:[90,0], 6:[0,180] };
+
+    function lacBat() {
+        step = 0;
+        bat.style.transform = "translateY(0) rotate(0)";
+        document.getElementById('soundXoc').play();
+        document.getElementById('msg').innerText = "ĐANG XÓC... 🔥";
+        
+        dices.forEach(d => d.classList.add('spinning'));
+        
+        setTimeout(() => {
+            dices.forEach(d => {
+                d.classList.remove('spinning');
+                let res = Math.floor(Math.random() * 6) + 1;
+                let a = angles[res];
+                d.style.transform = `rotateX(${a[0]}deg) rotateY(${a[1]}deg)`;
+            });
+            document.getElementById('msg').innerText = "XÓC XONG! CHẠM BÁT ĐỂ NẶN 👆";
+        }, 1500);
+    }
+
+    function moBat() {
+        if(step < 3) {
+            step++;
+            // Bát nhích lên và nghiêng theo từng lần chạm
+            bat.style.transform = `translateY(-${step * 70}px) rotate(${step * 10}deg)`;
+            if(step == 3) {
+                document.getElementById('soundMo').play();
+                document.getElementById('msg').innerText = "MỞ BÁT! CHÚC MỪNG 🎉";
+            }
+        }
+    }
+</script>
+</body>
+</html>
+"""
+
+# Hiển thị Game
+components.html(html_code, height=550)
+
+# Phần điều khiển tiền cược của Streamlit (nằm dưới game)
+st.write("---")
+c1, c2 = st.columns(2)
+with c1:
+    if st.button("🧧 Nhận thêm 1 Triệu"):
+        st.session_state.so_du += 1000000
+        st.rerun()
+with c2:
+    if st.button("🗑️ Reset Vốn"):
+        st.session_state.so_du = 10000000
+        st.rerun()
